@@ -33,6 +33,7 @@ type UPSCollector struct {
 	LastTransferOffBattery              *prometheus.Desc
 	LastSelftest                        *prometheus.Desc
 	NominalPowerWatts                   *prometheus.Desc
+	InternalTemp                        *prometheus.Desc
 	UPSStatus                           *prometheus.Desc
 	UPSInfo                             *prometheus.Desc
 
@@ -119,29 +120,36 @@ func NewUPSCollector(ss StatusSource) *UPSCollector {
 		),
 
 		LastTransferOnBattery: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "apcupsd_last_transfer_on_battery"),
+			prometheus.BuildFQName(namespace, "", "last_transfer_on_battery"),
 			"Time of last transfer to battery since apcupsd startup.",
 			nil,
 			nil,
 		),
 
 		LastTransferOffBattery: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "apcupsd_last_transfer_off_battery"),
+			prometheus.BuildFQName(namespace, "", "last_transfer_off_battery"),
 			"Time of last transfer from battery since apcupsd startup.",
 			nil,
 			nil,
 		),
 
 		LastSelftest: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "apcupsd_last_selftest"),
+			prometheus.BuildFQName(namespace, "", "last_selftest"),
 			"Time of last selftest since apcupsd startup.",
 			nil,
 			nil,
 		),
 
 		NominalPowerWatts: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "apcupsd_nominal_power_watts"),
+			prometheus.BuildFQName(namespace, "", "nominal_power_watts"),
 			"Nominal power output in watts.",
+			nil,
+			nil,
+		),
+
+		InternalTemp: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "internal_temp"),
+			"Internal temperature in degrees.",
 			nil,
 			nil,
 		),
@@ -276,6 +284,12 @@ func (c *UPSCollector) collect(ch chan<- prometheus.Metric) (*prometheus.Desc, e
 		c.NominalPowerWatts,
 		prometheus.GaugeValue,
 		float64(s.NominalPower),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		c.InternalTemp,
+		prometheus.GaugeValue,
+		float64(s.InternalTemp),
 	)
 
 	for _, status := range upsStatus {
